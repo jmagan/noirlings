@@ -68,7 +68,7 @@ fn prompt_for_completion(exercise: &Exercise, prompt_output: Option<String>) -> 
 
     let success_msg = match exercise.mode {
         Mode::Build => "The code is compiling!",
-        Mode::Execute(_) => "The code is compiling!",
+        Mode::Execute(_) => "The code is compiling and executed!",
         Mode::Test => "The code is compiling, and the tests pass!",
         // Mode::Clippy => clippy_success_msg,
     };
