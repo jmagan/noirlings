@@ -58,3 +58,17 @@ path = "exercises/04_structs/structs2.nr"
 mode = "test"
 hint = """
 """
+
+[[exercises]]
+name = "arrays1"
+path = "exercises/05_arrays/arrays1.nr"
+mode = "test"
+hint = """
+"""
+
+[[exercises]]
+name = "arrays2"
+path = "exercises/05_arrays/arrays2.nr"
+mode = "test"
+hint = """
+"""
