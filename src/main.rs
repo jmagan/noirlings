@@ -400,7 +400,7 @@ fn watch(exercises: &[Exercise]) -> notify::Result<WatchStatus> {
     let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2))?;
     watcher.watch(Path::new("./exercises"), RecursiveMode::Recursive)?;
 
-    clear_screen();
+    // clear_screen();
 
     let to_owned_hint = |t: &Exercise| t.hint.to_owned();
     let failed_exercise_hint = match verify(exercises.iter(), (0, exercises.len())) {

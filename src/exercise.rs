@@ -1,5 +1,5 @@
 use regex::Regex;
-use serde::de::{self, Visitor};
+use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 
 use std::fmt::{self, Display, Formatter};
@@ -8,7 +8,7 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::process::{self};
 
-use crate::noir::{nargo_compile, nargo_execute, nargo_test};
+use crate::noir::{bb_prove, bb_verify, nargo_compile, nargo_execute, nargo_test};
 
 const I_AM_DONE_REGEX: &str = r"(?m)^\s*///?\s*I\s+AM\s+NOT\s+DONE";
 const CONTEXT: usize = 2;
@@ -31,15 +31,93 @@ pub enum Mode {
     // Indicates that the exercise should be compiled as ACIR
     Build,
     /** Allow execution with export of witnesses.
-    Need to specify input values inline like
+    Need to specify the path of the toml file OR the toml content with its input values inlined like
+    """
+    { execute = {inlined = "a = '1' \nb = '2'"}}
+    """
+    OR
+        """
+    { execute = {path = "path/to/toml.toml"}}
+    """
+    */
+    Execute(TomlFile),
+    /** Allow execution and proof creatoin with bb backend (needs bb installed and matching nargo v.0.34.0)
+    Need to specify the path of the toml file OR the toml content with its input values inlined like
     """
     { execute = "a = '1' \nb = '2'" }
     """
     */
-    Execute(String),
+    BbProve(TomlFile),
+    BbVerify(TomlFile),
     // Indicates that the exercise should be compile and tested from the written Rust-like test
     Test,
 }
+
+#[derive(Clone, Debug)]
+pub enum TomlFile {
+    Inlined(String),
+    Path(String)
+}
+
+impl TomlFile {
+    pub fn to_string(&self) -> String {
+        match self {
+            TomlFile::Inlined(s) => s.clone(),
+            TomlFile::Path(p) => {
+                let mut file = File::open(p).unwrap_or_else(|_| {
+                    panic!("We were unable to open the toml file! {:?}", p)
+                });
+
+                let mut s = String::new();
+                file
+                    .read_to_string(&mut s)
+                    .expect("We were unable to read the toml file!");
+                s
+            }
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for TomlFile {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct TomlFileVisitor;
+
+        impl<'de> Visitor<'de> for TomlFileVisitor {
+            type Value = TomlFile;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a map with either 'inlined' or 'path' key")
+            }
+
+            fn visit_map<M>(self, mut map: M) -> Result<Self::Value, M::Error>
+            where
+                M: MapAccess<'de>,
+            {
+                let key: String = map
+                    .next_key()?
+                    .ok_or_else(|| de::Error::custom("missing key"))?;
+                match key.as_str() {
+                    "inlined" => {
+                        let value: String = map.next_value()?;
+                        Ok(TomlFile::Inlined(value))
+                    }
+                    "path" => {
+                        let value: String = map.next_value()?;
+                        Ok(TomlFile::Path(value))
+                    }
+                    _ => Err(de::Error::unknown_field(&key, &["inlined", "path"])),
+                }
+            }
+        }
+
+        deserializer.deserialize_map(TomlFileVisitor)
+    }
+}
+
+
 
 fn deserialize_mode<'de, D>(deserializer: D) -> Result<Mode, D::Error>
 where
@@ -74,10 +152,18 @@ where
                 .ok_or_else(|| de::Error::custom("missing key"))?;
             match key.as_str() {
                 "execute" => {
-                    let value: String = map.next_value()?;
+                    let value: TomlFile = map.next_value()?;
                     Ok(Mode::Execute(value))
-                }
-                _ => Err(de::Error::unknown_field(&key, &["execute"])),
+                },
+                "bbprove" => {
+                    let value : TomlFile = map.next_value()?;
+                    Ok(Mode::BbProve(value))
+                },
+                "bbverify" => {
+                    let value : TomlFile = map.next_value()?;
+                    Ok(Mode::BbVerify(value))
+                },
+                _ => Err(de::Error::unknown_field(&key, &["execute","bbprove","bbverify"])),
             }
         }
     }
@@ -148,8 +234,16 @@ impl Exercise {
         nargo_compile(&self.path)
     }
 
-    pub fn execute(&self, prover_toml: String) -> anyhow::Result<String> {
+    pub fn execute(&self, prover_toml: TomlFile) -> anyhow::Result<String> {
         nargo_execute(&self.path, prover_toml, self.name.clone())
+    }
+
+    pub fn create_proof(&self) -> anyhow::Result<String> {
+        bb_prove(self.name.clone())
+    }
+
+    pub fn verify_proof(&self) -> anyhow::Result<String> {
+        bb_verify(self.name.clone())
     }
 
     pub fn test(&self) -> anyhow::Result<String> {

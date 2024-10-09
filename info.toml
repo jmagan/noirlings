@@ -10,7 +10,14 @@
 #[[exercises]]
 #name = "example_execute"
 #path = "exercises/examples_for_contributors/example_execute.nr"
-#mode = { execute = "x = '1'\ny = '2'" }
+#mode = { execute = {inlined = "a = '1' \nb = '2'"}}
+#hint = """
+#It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
+#"""
+#[[exercises]]
+#name = "example_execute"
+#path = "exercises/examples_for_contributors/example_execute.nr"
+#mode = { execute = {path = "exercises/examples_for_contributors/example_execute.toml"}}
 #hint = """
 #It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
 #"""
@@ -20,6 +27,20 @@
 #mode = "test"
 #hint = """
 #Modify the test, maybe just change one of the argument ;)
+#"""
+#[[exercises]]
+#name = "example_bb_prove"
+#path = "exercises/examples_for_contributors/example_bb_prove.nr"
+#mode = { bbprove = {path = "exercises/examples_for_contributors/example_bb_prove.toml"}}
+#hint = """
+#It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
+#"""
+#[[exercises]]
+#name = "example_bb_verify"
+#path = "exercises/examples_for_contributors/example_bb_verify.nr"
+#mode = { bbverify = {path = "exercises/examples_for_contributors/example_bb_prove.toml"}}
+#hint = """
+#It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
 #"""
 
 #-----------------------------------------------------------------------

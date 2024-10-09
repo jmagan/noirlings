@@ -34,7 +34,13 @@ pub fn verify<'a>(
             let run_result = match &exercise.mode {
                 Mode::Build => utils::build_exercise(exercise),
                 Mode::Execute(str) => utils::execute_exercise(exercise, str.clone()),
+                Mode::BbProve(str) => utils::bb_prove_exercise(exercise, str.clone()),
+                Mode::BbVerify(str) => utils::bb_verify_exercise(exercise, str.clone()),
                 Mode::Test => utils::test_exercise(exercise),
+                _ => {
+                    eprintln!("Invalid mode for exercise: {}", exercise.name);
+                    return Err(exercise);
+                }
             };
             match run_result {
                 Ok(run_state) => Ok(prompt_for_completion(exercise, Some(run_state))),
@@ -68,8 +74,10 @@ fn prompt_for_completion(exercise: &Exercise, prompt_output: Option<String>) -> 
 
     let success_msg = match exercise.mode {
         Mode::Build => "The code is compiling!",
-        Mode::Execute(_) => "The code is compiling!",
+        Mode::Execute(_) => "The code is compiling based on the witnesses!",
+        Mode::BbProve(_) => "The code is compiling and a bb proof has been created!",
         Mode::Test => "The code is compiling, and the tests pass!",
+        Mode::BbVerify(_) => "The code is compiling and the bb proof has been verified!",
         // Mode::Clippy => clippy_success_msg,
     };
 
