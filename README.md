@@ -45,7 +45,7 @@ Noirlings - An interactive tutorial to get started with the Noir DSL
     |  \| |/ _ \| | '__| | | '_ \ / _` / __|
     | |\  | (_) | | |  | | | | | | (_| \__ \
     |_| \_|\___/|_|_|  |_|_|_| |_|\__, |___/
-                                |___/
+                                  |___/
 
 Thanks for installing noirlings!
 
