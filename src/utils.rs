@@ -61,11 +61,11 @@ pub fn bb_prove_exercise(exercise: &Exercise, prover_toml: TomlFile) -> Result<S
     }
 }
 
-pub fn bb_prove_verify_exercise(exercise: &Exercise, prover_toml: TomlFile) -> Result<String, ()> {
+pub fn bb_prove_verify_exercise(exercise: &Exercise, prover_toml: TomlFile, save_files: bool) -> Result<String, ()> {
     progress!("Running {} exercise...", exercise);
 
     let compilation_result = exercise.execute(prover_toml);
-    let verification_result = exercise.prove_verify_proof();
+    let verification_result = exercise.prove_verify_proof(save_files);
 
     if let Err(error) = compilation_result {
         eprintln!("{error}");
@@ -115,6 +115,6 @@ pub fn print_exercise_success(exercise: &Exercise) {
         Mode::Execute(ref toml) => success!("Successfully ran {}!\n With inputs: {}", exercise, toml.to_string()),
         Mode::Test => success!("Successfully tested {}!", exercise),
         Mode::BbProve(ref toml) => success!("Successfully ran {} and created proof!\n With inputs: {}", exercise, toml.to_string()),
-        Mode::BbVerify(ref toml) => success!("Successfully ran {} and verified proof!\n With inputs: {}", exercise, toml.to_string()),
+        Mode::BbVerify(ref options) => success!("Successfully ran {} and verified proof!\n With inputs: {}", exercise, options.toml_file.to_string()),
     }
 }

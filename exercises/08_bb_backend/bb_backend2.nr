@@ -9,7 +9,7 @@
 // bb  prove_and_verify -b ./target/runner_crate.json -w ./target/bb_backend2.gz
 // more info https://github.com/AztecProtocol/aztec-packages/blob/barretenberg-v0.55.0/barretenberg/cpp/src/barretenberg/bb/main.cpp#L1369-L1512
 
-// We could also do the following:
+// We could also do the following inside the runner_crate:
 // bb prove -b ./target/runner_crate.json -w ./target/bb_backend2.gz -o ./target/proof-bb_backend2
 // bb write_vk -b ./target/runner_crate.json -o ./target/vk-bb_backend2
 // bb verify -k ./target/vk-bb_backend2 -p ./target/proof-bb_backend2

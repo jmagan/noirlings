@@ -1,6 +1,6 @@
 use crate::{
     clear_screen,
-    exercise::{Exercise, Mode, State},
+    exercise::{BbVerifyOptions, Exercise, Mode, State},
     utils,
 };
 use console::style;
@@ -31,7 +31,7 @@ pub fn verify<'a>(
                 Mode::Build => utils::build_exercise(exercise),
                 Mode::Execute(str) => utils::execute_exercise(exercise, str.clone()),
                 Mode::BbProve(str) => utils::bb_prove_exercise(exercise, str.clone()),
-                Mode::BbVerify(str) => utils::bb_prove_verify_exercise(exercise, str.clone()),
+                Mode::BbVerify(BbVerifyOptions {toml_file,save_files}) => utils::bb_prove_verify_exercise(exercise, toml_file.clone(), *save_files),
                 Mode::Test => utils::test_exercise(exercise),
                 _ => {
                     eprintln!("Invalid mode for exercise: {}", exercise.name);

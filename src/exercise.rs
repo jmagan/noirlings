@@ -8,7 +8,7 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::process::{self};
 
-use crate::noir::{bb_prove, bb_prove_and_verify, nargo_compile, nargo_execute, nargo_test};
+use crate::noir::{bb_prove, bb_prove_and_verify, bb_verify_saving_files, nargo_compile, nargo_execute, nargo_test};
 
 const I_AM_DONE_REGEX: &str = r"(?m)^\s*///?\s*I\s+AM\s+NOT\s+DONE";
 const CONTEXT: usize = 2;
@@ -41,16 +41,21 @@ pub enum Mode {
     """
     */
     Execute(TomlFile),
-    /** Allow execution and proof creatoin with bb backend (needs bb installed and matching nargo v.0.34.0)
-    Need to specify the path of the toml file OR the toml content with its input values inlined like
-    """
-    { execute = "a = '1' \nb = '2'" }
-    """
-    */
     BbProve(TomlFile),
-    BbVerify(TomlFile),
+    /**
+     *     """
+    { bbverify = { toml_file = { path = "path/to/toml.toml"}, save_files = true }
+    """
+     */
+    BbVerify(BbVerifyOptions),
     // Indicates that the exercise should be compile and tested from the written Rust-like test
     Test,
+}
+
+#[derive(Deserialize,Clone,Debug)]
+pub struct BbVerifyOptions{
+    pub toml_file: TomlFile,
+    pub save_files: bool
 }
 
 #[derive(Clone, Debug)]
@@ -160,7 +165,7 @@ where
                     Ok(Mode::BbProve(value))
                 },
                 "bbverify" => {
-                    let value : TomlFile = map.next_value()?;
+                    let value : BbVerifyOptions = map.next_value()?;
                     Ok(Mode::BbVerify(value))
                 },
                 _ => Err(de::Error::unknown_field(&key, &["execute","bbprove","bbverify"])),
@@ -242,8 +247,12 @@ impl Exercise {
         bb_prove(self.name.clone())
     }
 
-    pub fn prove_verify_proof(&self) -> anyhow::Result<String> {
-        bb_prove_and_verify(self.name.clone())
+    pub fn prove_verify_proof(&self, saving_files: bool) -> anyhow::Result<String> {
+        if (saving_files) {
+            return bb_verify_saving_files(self.name.clone());
+        } else {
+            return bb_prove_and_verify(self.name.clone());
+        }
     }
 
     pub fn test(&self) -> anyhow::Result<String> {

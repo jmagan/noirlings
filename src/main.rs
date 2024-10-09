@@ -412,7 +412,7 @@ fn watch(exercises: &[Exercise]) -> notify::Result<WatchStatus> {
         match rx.recv_timeout(Duration::from_secs(1)) {
             Ok(event) => match event {
                 DebouncedEvent::Create(b) | DebouncedEvent::Chmod(b) | DebouncedEvent::Write(b) => {
-                    if b.extension() == Some(OsStr::new("nr")) && b.exists() {
+                    if b.extension() == Some(OsStr::new("nr")) || b.extension() == Some(OsStr::new("toml"))  && b.exists() {
                         let filepath = b.as_path().canonicalize().unwrap();
                         let pending_exercises = exercises
                             .iter()
