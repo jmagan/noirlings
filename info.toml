@@ -187,7 +187,7 @@ Don't forget to read the instruction and apply the given commands ! (inside the 
 [[exercises]]
 name = "bb_recursion2"
 path = "exercises/08_bb_backend/bb_recursion2.nr"
-mode = { bbverify ={ save_files = true, file_toml={path = "exercises/08_bb_backend/bb_recursion2.toml"} } }
+mode = { bbverify ={ save_files = true, toml_file={path = "exercises/08_bb_backend/bb_recursion2.toml"} } }
 hint = """
 Declare the variables in the bb_recursion2.toml file with the helps of the newly generated files !
 Read the instructions closely ! 
