@@ -61,29 +61,22 @@ pub fn bb_prove_exercise(exercise: &Exercise, prover_toml: TomlFile) -> Result<S
     }
 }
 
-pub fn bb_verify_exercise(exercise: &Exercise, prover_toml: TomlFile) -> Result<String, ()> {
+pub fn bb_prove_verify_exercise(exercise: &Exercise, prover_toml: TomlFile) -> Result<String, ()> {
     progress!("Running {} exercise...", exercise);
 
     let compilation_result = exercise.execute(prover_toml);
-    let proof_creation_result = exercise.create_proof();
-    let verification_result = exercise.verify_proof();
+    let verification_result = exercise.prove_verify_proof();
 
     if let Err(error) = compilation_result {
         eprintln!("{error}");
 
         warn!("Failed to execute {}! Please try again.", exercise);
         Err(())
-    } else if let Err(error) = proof_creation_result {
-        eprintln!("{error}");
-
-        warn!("Compilation worked but failed to create proof with barretenberg for {}! Please try again.", exercise);
-        eprintln!("Are you sure you installed barretenberg properly ?");
-        Err(())
-        
     } else if let Err(error) = verification_result {
         eprintln!("{error}");
 
-        warn!("Compilation and proof creation worked but failed to verify proof with barretenberg for {}! Please try again.", exercise);
+        warn!("Compilation worked but failed to prove and verify with barretenberg backend for {}! Please try again.", exercise);
+        eprintln!("Are you sure you installed barretenberg properly ?");
         Err(())
         
     } else {

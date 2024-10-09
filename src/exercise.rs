@@ -8,7 +8,7 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::process::{self};
 
-use crate::noir::{bb_prove, bb_verify, nargo_compile, nargo_execute, nargo_test};
+use crate::noir::{bb_prove, bb_prove_and_verify, nargo_compile, nargo_execute, nargo_test};
 
 const I_AM_DONE_REGEX: &str = r"(?m)^\s*///?\s*I\s+AM\s+NOT\s+DONE";
 const CONTEXT: usize = 2;
@@ -242,8 +242,8 @@ impl Exercise {
         bb_prove(self.name.clone())
     }
 
-    pub fn verify_proof(&self) -> anyhow::Result<String> {
-        bb_verify(self.name.clone())
+    pub fn prove_verify_proof(&self) -> anyhow::Result<String> {
+        bb_prove_and_verify(self.name.clone())
     }
 
     pub fn test(&self) -> anyhow::Result<String> {

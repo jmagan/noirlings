@@ -14,7 +14,7 @@ pub fn run(exercise: &Exercise) -> Result<(), ()> {
         Mode::Build => utils::build_exercise(exercise)?,
         Mode::Execute(str) => utils::execute_exercise(exercise, str.clone())?,
         Mode::BbProve(str) => utils::bb_prove_exercise(exercise, str.clone())?,
-        Mode::BbVerify(str) => utils::bb_verify_exercise(exercise, str.clone())?,
+        Mode::BbVerify(str) => utils::bb_prove_verify_exercise(exercise, str.clone())?,
         Mode::Test => utils::test_exercise(exercise)?,
         _ => {
             eprintln!("Invalid mode for exercise: {}", exercise.name);

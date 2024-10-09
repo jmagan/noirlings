@@ -162,6 +162,14 @@ Check the 'remove' method
 [[exercises]]
 name = "bb_backend1"
 path = "exercises/08_backends/bb_backend1.nr"
+mode = { bbprove = {path = "exercises/08_backends/bb_backend1.toml"}}
+hint = """
+Declare the variables in the bb_backend1.toml file
+"""
+
+[[exercises]]
+name = "bb_backend2"
+path = "exercises/08_backends/bb_backend2.nr"
 mode = { bbverify = {path = "exercises/08_backends/bb_backend1.toml"}}
 hint = """
 Declare the variables in the bb_backend1.toml file

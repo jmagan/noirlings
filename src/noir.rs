@@ -181,6 +181,28 @@ pub fn bb_verify(exercise_name: String) -> anyhow::Result<String> {
     }
 }
 
+pub fn bb_prove_and_verify(exercise_name: String) -> anyhow::Result<String> {
+    // more info https://github.com/AztecProtocol/aztec-packages/blob/barretenberg-v0.55.0/barretenberg/cpp/src/barretenberg/bb/main.cpp#L1369-L1512
+    // prove_and_verify -b ./target/hello_world.json -w ./target/witness-name.gz
+    println!("Proving and verifying proof with barretenberg (bb)");
+    let output_verify = Command::new("bb")
+        .arg("prove_and_verify")
+        .arg("-b")
+        .arg("runner_crate/target/runner_crate.json")
+        .arg("-w")
+        .arg(format!("runner_crate/target/{}.gz", exercise_name))
+        .output()?;
+    if !output_verify.status.success() {
+        anyhow::bail!(
+            "Failed to prove and verify the program: {}",
+            String::from_utf8_lossy(&output_verify.stderr)
+        );
+        
+    }else{
+        anyhow::Ok("".into())
+    }
+}
+
 // Runs tests on the testing crate with nargo
 pub fn nargo_test(file_path: &PathBuf) -> anyhow::Result<String> {
     let crate_path = prepare_crate_for_exercise(file_path, None);
