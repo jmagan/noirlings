@@ -146,7 +146,10 @@ pub fn bb_prove(exercise_name: String) -> anyhow::Result<String> {
     }
 }
 
-pub fn bb_verify_saving_files(exercise_name: String) -> anyhow::Result<String> {
+pub fn bb_prove_verify_saving_files(exercise_name: String) -> anyhow::Result<String> {
+    
+    bb_prove(exercise_name.clone())?;
+
     // bb write_vk -b ./target/hello_world.json -o ./target/vk
     // bb verify -k ./target/vk -p ./target/proof
     println!("Exporting verification key with barretenberg (bb)");
