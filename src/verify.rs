@@ -48,7 +48,9 @@ pub fn verify<'a>(
         }
         let percentage = num_done as f32 / total as f32 * 100.0;
         bar.set_message(format!("({percentage:.1} %)"));
-        num_done += 1;
+        if exercise.looks_done(){
+            num_done += 1;
+        }
     }
     Ok(())
 }
