@@ -7,18 +7,18 @@ use noirc_frontend::hir::FunctionNameMatch;
 use std::{
     env::current_dir,
     fs::{self},
-    path::PathBuf,
+    path::PathBuf, process::Command,
 };
 use noirc_driver::{CompileOptions, CompiledProgram, NOIR_ARTIFACT_VERSION_STRING};
 
-use crate::nargo::{
+use crate::{exercise::TomlFile, nargo::{
         cli_compile_workspace_full, compile, execute_program_and_decode, read_program_from_file, run_tests, save_witness_to_dir
-    };
+    }};
 
 
 // Prepares testing crate
 // Copies the exercise file into testing crate
-pub fn prepare_crate_for_exercise(file_path: &PathBuf, prover_toml: Option<String>) -> PathBuf {
+pub fn prepare_crate_for_exercise(file_path: &PathBuf, prover_toml: Option<TomlFile>) -> PathBuf {
     let crate_path = current_dir()
         .unwrap()
         .join(PathBuf::from("runner_crate"));
@@ -35,8 +35,17 @@ pub fn prepare_crate_for_exercise(file_path: &PathBuf, prover_toml: Option<Strin
     };
 
     if let Some(prover_toml) = prover_toml {
-        let prover_toml_path = crate_path.join(format!("{}.toml", PROVER_INPUT_FILE));
-        fs::write(prover_toml_path, prover_toml).expect("Unable to write file");
+        match prover_toml {
+            TomlFile::Inlined(str) => {
+                let prover_toml_path = crate_path.join(format!("{}.toml", PROVER_INPUT_FILE));
+                fs::write(prover_toml_path, str).expect("Unable to write file");
+            },
+            TomlFile::Path(path) => {
+                let prover_toml_path = crate_path.join(format!("{}.toml", PROVER_INPUT_FILE));
+                fs::copy(path, prover_toml_path).expect("Unable to copy file");
+            }
+
+        }
     }
     crate_path
 }
@@ -53,7 +62,7 @@ pub fn nargo_compile(file_path: &PathBuf) -> anyhow::Result<String> {
 // Execute the crate with noir
 pub fn nargo_execute(
     file_path: &PathBuf,
-    prover_toml: String,
+    prover_toml: TomlFile,
     exercise_name: String,
 ) -> anyhow::Result<String> {
     /*      Small version example
@@ -113,6 +122,88 @@ pub fn nargo_execute(
         );
     }
     anyhow::Ok("".into())
+}
+
+pub fn bb_prove(exercise_name: String) -> anyhow::Result<String> {
+    // -b ./target/hello_world.json -w ./target/witness-name.gz -o ./target/proof-name
+    println!("Creating proof with barretenberg");
+    let output = Command::new("bb")
+        .arg("prove")
+        .arg("-b")
+        .arg("runner_crate/target/runner_crate.json")
+        .arg("-w")
+        .arg(format!("runner_crate/target/{}.gz", exercise_name))
+        .arg("-o")
+        .arg(format!("runner_crate/target/proof-{}", exercise_name))
+        .output()?;
+    if !output.status.success() {
+        anyhow::bail!(
+            "Failed to prove the program: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    } else{
+        anyhow::Ok("".into())
+    }
+}
+
+pub fn bb_prove_verify_saving_files(exercise_name: String) -> anyhow::Result<String> {
+    
+    bb_prove(exercise_name.clone())?;
+
+    // bb write_vk -b ./target/hello_world.json -o ./target/vk
+    // bb verify -k ./target/vk -p ./target/proof
+    println!("Exporting verification key with barretenberg (bb)");
+    let output_write_vk = Command::new("bb")
+        .arg("write_vk")
+        .arg("-b")
+        .arg("runner_crate/target/runner_crate.json")
+        .arg("-o")
+        .arg(format!("runner_crate/target/vk-{}", exercise_name))
+        .output()?;
+    println!("Verifying proof with barretenberg (bb)");
+    let output_verify = Command::new("bb")
+        .arg("verify")
+        .arg("-k")
+        .arg(format!("runner_crate/target/vk-{}", exercise_name))
+        .arg("-p")
+        .arg(format!("runner_crate/target/proof-{}", exercise_name))
+        .output()?;
+    if !output_write_vk.status.success() {
+        anyhow::bail!(
+            "Failed to verify the program: {}",
+            String::from_utf8_lossy(&output_write_vk.stderr)
+        );
+    } else if !output_verify.status.success() {
+        anyhow::bail!(
+            "Failed to verify the program: {}",
+            String::from_utf8_lossy(&output_verify.stderr)
+        );
+        
+    }else{
+        anyhow::Ok("".into())
+    }
+}
+
+pub fn bb_prove_and_verify(exercise_name: String) -> anyhow::Result<String> {
+    // more info https://github.com/AztecProtocol/aztec-packages/blob/barretenberg-v0.55.0/barretenberg/cpp/src/barretenberg/bb/main.cpp#L1369-L1512
+    // prove_and_verify -b ./target/hello_world.json -w ./target/witness-name.gz
+    println!("Proving and verifying proof with barretenberg (bb)");
+    let output_verify = Command::new("bb")
+        .arg("prove_and_verify")
+        .arg("-b")
+        .arg("runner_crate/target/runner_crate.json")
+        .arg("-w")
+        .arg(format!("runner_crate/target/{}.gz", exercise_name))
+        .output()?;
+    if !output_verify.status.success() {
+        anyhow::bail!(
+            "Failed to prove and verify the program: {}",
+            String::from_utf8_lossy(&output_verify.stderr)
+        );
+        
+    }else{
+        anyhow::Ok("".into())
+    }
 }
 
 // Runs tests on the testing crate with nargo

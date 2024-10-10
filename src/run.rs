@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use crate::{
-    exercise::{Exercise, Mode},
+    exercise::{BbVerifyOptions, Exercise, Mode},
     utils,
 };
 
@@ -13,7 +13,13 @@ pub fn run(exercise: &Exercise) -> Result<(), ()> {
     let run_result = match &exercise.mode {
         Mode::Build => utils::build_exercise(exercise)?,
         Mode::Execute(str) => utils::execute_exercise(exercise, str.clone())?,
+        Mode::BbProve(str) => utils::bb_prove_exercise(exercise, str.clone())?,
+        Mode::BbVerify(BbVerifyOptions {toml_file,save_files}) => utils::bb_prove_verify_exercise(exercise, toml_file.clone(), *save_files)?,
         Mode::Test => utils::test_exercise(exercise)?,
+        _ => {
+            eprintln!("Invalid mode for exercise: {}", exercise.name);
+            return Err(());
+        }
     };
     utils::print_exercise_output(run_result);
     utils::print_exercise_success(exercise);

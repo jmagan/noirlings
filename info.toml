@@ -10,7 +10,14 @@
 #[[exercises]]
 #name = "example_execute"
 #path = "exercises/examples_for_contributors/example_execute.nr"
-#mode = { execute = "x = '1'\ny = '2'" }
+#mode = { execute = {inlined = "a = '1' \nb = '2'"}}
+#hint = """
+#It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
+#"""
+#[[exercises]]
+#name = "example_execute"
+#path = "exercises/examples_for_contributors/example_execute.nr"
+#mode = { execute = {path = "exercises/examples_for_contributors/example_execute.toml"}}
 #hint = """
 #It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
 #"""
@@ -20,6 +27,20 @@
 #mode = "test"
 #hint = """
 #Modify the test, maybe just change one of the argument ;)
+#"""
+#[[exercises]]
+#name = "example_bb_prove"
+#path = "exercises/examples_for_contributors/example_bb_prove.nr"
+#mode = { bbprove = {path = "exercises/examples_for_contributors/example_bb_prove.toml"}}
+#hint = """
+#It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
+#"""
+#[[exercises]]
+#name = "example_bb_verify"
+#path = "exercises/examples_for_contributors/example_bb_verify.nr"
+#mode = { bbverify = { save_files = false, toml_file = {path = "exercises/examples_for_contributors/example_bb_prove.toml"}}}
+#hint = """
+#It should compile to ACIR and execute with a=1 and b=2. Remove the // I AM NOT DONE comment to continue
 #"""
 
 #-----------------------------------------------------------------------
@@ -134,4 +155,40 @@ path = "exercises/07_hash_maps/hashmaps5.nr"
 mode = "test"
 hint = """
 Check the 'remove' method
+"""
+
+#-----------------------------------------------------------------------
+# BACKEND BB
+[[exercises]]
+name = "bb_backend1"
+path = "exercises/08_bb_backend/bb_backend1.nr"
+mode = { bbprove = {path = "exercises/08_bb_backend/bb_backend1.toml"}}
+hint = """
+Declare the variables in the bb_backend1.toml file
+"""
+
+[[exercises]]
+name = "bb_backend2"
+path = "exercises/08_bb_backend/bb_backend2.nr"
+mode = { bbverify = {save_files = false, toml_file = {path = "exercises/08_bb_backend/bb_backend1.toml"}}}
+hint = """
+Declare the variables in the bb_backend1.toml file
+"""
+
+[[exercises]]
+name = "bb_recursion1"
+path = "exercises/08_bb_backend/bb_recursion1.nr"
+mode = { bbverify = { save_files = true, toml_file = {path = "exercises/08_bb_backend/bb_recursion1.toml"}}}
+hint = """
+Declare the variables in the bb_recursion1.toml file.
+Don't forget to read the instruction and apply the given commands ! (inside the runner_crate folder !)
+"""
+
+[[exercises]]
+name = "bb_recursion2"
+path = "exercises/08_bb_backend/bb_recursion2.nr"
+mode = { bbverify ={ save_files = true, toml_file={path = "exercises/08_bb_backend/bb_recursion2.toml"} } }
+hint = """
+Declare the variables in the bb_recursion2.toml file with the helps of the newly generated files !
+Read the instructions closely ! 
 """
